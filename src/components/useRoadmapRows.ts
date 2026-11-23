@@ -12,12 +12,19 @@
 
 import { useMemo } from 'react';
 import { useBundle, useBundleEntries } from '@immediately-run/sdk';
-import type { ItemRow, Meta } from './roadmapLib';
-import { itemRows } from './roadmapLib';
+import type { ItemRow, Meta, TicketIndex } from './roadmapLib';
+import { itemRows, ticketIndex } from './roadmapLib';
 
 export function useRoadmapRows(): ItemRow[] {
   const entries = useBundleEntries<Meta>();
   return useMemo(() => itemRows(entries), [entries]);
+}
+
+/** The ready gate's index and each parent's children over every ticket in the store, for
+ *  the cards (`ticketIndex`). One per surface, not one per card. */
+export function useTicketIndex(): TicketIndex {
+  const rows = useRoadmapRows();
+  return useMemo(() => ticketIndex(rows), [rows]);
 }
 
 /**

@@ -36,7 +36,7 @@ export default function ProjectMeta({ project }: { project?: string }) {
         </span>
       ) : null}
       <span className="rm-projectmeta__rollup" title="rollup of member item statuses (derived)">
-        {total} item{total === 1 ? '' : 's'}
+        {total} ticket{total === 1 ? '' : 's'}
         {rollup.map((r) => (
           <span key={r.status} className="rm-chip" data-kind="rollup" data-status={r.status}>
             {r.count} {statusLabel(r.status).toLowerCase()}

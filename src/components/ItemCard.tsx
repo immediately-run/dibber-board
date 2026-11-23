@@ -1,7 +1,7 @@
 import { Link } from '@immediately-run/sdk';
 import './roadmap.css';
-import type { ItemRow } from './roadmapLib';
-import { prLabel, prUrl } from './roadmapLib';
+import type { ItemRow, TicketIndex } from './roadmapLib';
+import { prLabel, prUrl, waitLabel, waitsOf } from './roadmapLib';
 import InlineProse from './InlineProse';
 import StatusBadge from './StatusBadge';
 
@@ -12,11 +12,26 @@ import StatusBadge from './StatusBadge';
 // The href comes off the ROW, not from a path helper here (R3-174): corpus-path→URL is
 // the viewer's policy, and a content component that computed its own would be right in
 // exactly one packaging.
-export default function ItemCard({ row, showStatus = false }: { row: ItemRow; showStatus?: boolean }) {
+//
+// Given the store's `index`, an available card also says what still holds it — a dependency
+// in another repository is labelled as that, not as a missing ticket — and a parent says how
+// many children it has and how many are done ([DIB-13](https://github.com/immediately-run/dibber/blob/main/tickets/DIB-13.md)).
+export default function ItemCard({
+  row,
+  showStatus = false,
+  index,
+}: {
+  row: ItemRow;
+  showStatus?: boolean;
+  index?: TicketIndex;
+}) {
   // The generated title is `R3-217 — <headline>`; the id is its own chip, so drop the
   // duplicated prefix rather than printing the id twice on every card.
   const headline = row.title.replace(new RegExp(`^${row.id}\\s*[—-]\\s*`), '') || row.title;
   const chips = row.tags.filter((t) => t !== 'roadmap-item');
+  const waits = index && row.status === 'available' ? waitsOf(row, index.ready) : [];
+  const children = index?.children.get(row.id) ?? [];
+  const childrenDone = children.filter((c) => c.status === 'done').length;
   return (
     <Link href={row.href} className="rm-card" data-status={row.status}>
       <div className="rm-card__top">
@@ -28,6 +43,21 @@ export default function ItemCard({ row, showStatus = false }: { row: ItemRow; sh
         <InlineProse text={headline} />
       </div>
       <div className="rm-card__meta">
+        {row.assignee ? (
+          <span className="rm-chip" data-kind="assignee" title="assignee: who said they are working on it">
+            {row.assignee}
+          </span>
+        ) : null}
+        {waits.map((w) => (
+          <span key={w.id} className="rm-chip" data-kind="waits" data-why={w.why}>
+            {waitLabel(w)}
+          </span>
+        ))}
+        {children.length ? (
+          <span className="rm-chip" data-kind="children" title={children.map((c) => c.id).join(', ')}>
+            {childrenDone}/{children.length} children done
+          </span>
+        ) : null}
         {row.repos.map((r) => (
           <span key={r} className="rm-chip" data-kind="repo">{r}</span>
         ))}

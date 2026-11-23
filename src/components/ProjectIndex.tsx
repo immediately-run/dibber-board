@@ -1,30 +1,31 @@
 import { useMemo } from 'react';
 import { Link, useBundleEntries } from '@immediately-run/sdk';
-import { isEntryPath, queueRollup, readyIndex, statusRollup } from './roadmapLib';
+import { isEntryPath, queueRollup, readyIndex, statusRollup, usesQueues } from './roadmapLib';
 import type { Meta } from './roadmapLib';
 import { statusLabel } from './roadmapData';
-import { useBundleReady, useRoadmapRows } from './useRoadmapRows';
+import { useBundleReady, useRoadmapRows, useTicketIndex } from './useRoadmapRows';
 import InlineProse from './InlineProse';
 import ItemCard from './ItemCard';
 import QueueChips from './QueueChips';
 
 // `<ProjectIndex>` — the project-level view of the work: every Project entity with
-// its derived status rollup and queue rollup (`queueRollup`: ready work by queue, work
-// the ready gate holds, work in flight), plus the **unclustered** view (live items carrying no
-// `project:`, which the projects index explicitly allows).
+// its derived status rollup and queue rollup (`queueRollup`: ready work, by queue where the
+// store uses the queue convention; work the ready gate holds; work in flight), plus the
+// **unclustered** view (open tickets carrying no `project:`).
 //
-// A live query over both `kind: project` entities and `roadmap-item` entries, so a
-// new project file or a re-clustered item shows up with no page edit.
+// A live query over both `kind: project` pages (R-DIB-10) and tickets (R-DIB-1), so a
+// new project file or a re-clustered ticket shows up with no page edit.
 export default function ProjectIndex({ showUnclustered = 'true' }: { showUnclustered?: string }) {
   const entries = useBundleEntries<Meta>();
   const itemRows = useRoadmapRows();
+  const ticketIdx = useTicketIndex();
   const ready = useBundleReady();
 
-  const { projects, unclustered, unclusteredQueues } = useMemo(() => {
-    // Built over EVERY row, archived included: a member's dependency may be archived or
-    // live in another project, and the ready gate has to see it either way.
+  const { projects, unclustered, unclusteredQueues, queues } = useMemo(() => {
+    // Built over EVERY row, closed included: a member's dependency may be closed or open in
+    // another project, and the ready gate has to see it either way.
     const index = readyIndex(itemRows);
-    const items = itemRows.filter((r) => !r.archived);
+    const items = itemRows.filter((r) => !r.closed);
     const byProject = new Map<string, typeof items>();
     for (const r of items) {
       const k = r.project || '';
@@ -52,7 +53,12 @@ export default function ProjectIndex({ showUnclustered = 'true' }: { showUnclust
     // Most-active first, then alphabetical — an empty project sinks to the bottom.
     list.sort((a, b) => b.count - a.count || (a.title < b.title ? -1 : 1));
     const loose = byProject.get('') ?? [];
-    return { projects: list, unclustered: loose, unclusteredQueues: queueRollup(loose, index) };
+    return {
+      projects: list,
+      unclustered: loose,
+      unclusteredQueues: queueRollup(loose, index),
+      queues: usesQueues(itemRows),
+    };
   }, [entries, itemRows]);
 
   if (!ready) return <div className="rm-projects" data-loading="1"><div className="sk sk-line" /></div>;
@@ -66,7 +72,7 @@ export default function ProjectIndex({ showUnclustered = 'true' }: { showUnclust
               <span className="rm-project__t">
                 <InlineProse text={p.title || p.id} />
               </span>
-              <span className="rm-badge" data-status={p.status}>{p.status}</span>
+              {p.status ? <span className="rm-badge" data-status={p.status}>{p.status}</span> : null}
             </div>
             {p.description ? (
               <div className="rm-project__d">
@@ -74,13 +80,13 @@ export default function ProjectIndex({ showUnclustered = 'true' }: { showUnclust
               </div>
             ) : null}
             <div className="rm-card__meta">
-              <span className="rm-chip" data-kind="count">{p.count} item{p.count === 1 ? '' : 's'}</span>
+              <span className="rm-chip" data-kind="count">{p.count} ticket{p.count === 1 ? '' : 's'}</span>
               {p.rollup.map((r) => (
                 <span key={r.status} className="rm-chip" data-kind="rollup" data-status={r.status}>
                   {r.count} {statusLabel(r.status).toLowerCase()}
                 </span>
               ))}
-              <QueueChips rollup={p.queues} />
+              <QueueChips rollup={p.queues} byQueue={queues} />
             </div>
           </Link>
         ))}
@@ -93,15 +99,15 @@ export default function ProjectIndex({ showUnclustered = 'true' }: { showUnclust
           </header>
           {unclustered.length ? (
             <div className="rm-card__meta">
-              <QueueChips rollup={unclusteredQueues} />
+              <QueueChips rollup={unclusteredQueues} byQueue={queues} />
             </div>
           ) : null}
           {unclustered.length ? (
             <div className="rm-col__body">
-              {unclustered.map((r) => <ItemCard key={r.path} row={r} showStatus />)}
+              {unclustered.map((r) => <ItemCard key={r.path} row={r} showStatus index={ticketIdx} />)}
             </div>
           ) : (
-            <p className="rm-col__empty">Every live item belongs to a project.</p>
+            <p className="rm-col__empty">Every open ticket belongs to a project.</p>
           )}
         </section>
       ) : null}

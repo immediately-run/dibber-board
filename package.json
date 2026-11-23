@@ -1,14 +1,14 @@
 {
-  "name": "@immediately-run/baton-board",
+  "name": "@immediately-run/dibber-board",
   "private": true,
   "version": "1.0.0",
   "main": "src/main.tsx",
   "type": "module",
-  "description": "The ticket-wiki viewer: Baton's board components, once, as an ordinary immediately.run app on the Grove thin shell.",
+  "description": "The Dibber board: open a repository's Dibber ticket store on immediately.run as a read-only kanban board, ticket pages and project pages. An ordinary immediately.run app on the Grove thin shell.",
   "license": "Apache-2.0",
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/immediately-run/baton-board.git"
+    "url": "git+https://github.com/immediately-run/dibber-board.git"
   },
   "immediately.run": {
     "$schema": "https://immediately.run/immediately-run-config.schema.json",

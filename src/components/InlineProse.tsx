@@ -6,7 +6,7 @@
 // punctuation. Grove's engine component, which the board carried a copy of while
 // it was corpus code: a corpus component may not path into the viewer's filesystem
 // (`MDX_FROM_MOUNT_SPEC` §2). The file imports nothing viewer-local, so it travels
-// whole — and in baton-board it is app code with the rest of the board, compiled
+// whole — and in dibber-board it is app code with the rest of the board, compiled
 // by this package rather than by a corpus build.
 //
 // Links, images, HTML and JSX are not inline prose and never will be: a title

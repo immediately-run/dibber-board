@@ -1,65 +1,64 @@
 import { useMemo } from 'react';
-import { groupRows } from './roadmapLib';
+import { boardLayout } from './roadmapLib';
+import type { BoardScope } from './roadmapLib';
 import { statusLabel } from './roadmapData';
-import { useBundleReady, useRoadmapRows } from './useRoadmapRows';
+import { useBundleReady, useRoadmapRows, useTicketIndex } from './useRoadmapRows';
 import { useProjectId } from './useProjectId';
-import ItemCard from './ItemCard';
+import BoardColumn from './BoardColumn';
 
 interface Props {
   /** The project id. Defaults to the current page's own `id` when it is a project. */
   project?: string;
   groupBy?: 'status' | 'repo' | 'tag';
-  /** `live` (default) hides archived members; `archive` only them; `all` both. */
-  scope?: 'live' | 'archive' | 'all';
+  /** `open` (default): open members, with the closed folded into one column; `closed`: only
+   *  the closed; `all`: every member. `live` and `archive` are older names for the first two. */
+  scope?: BoardScope;
 }
 
-// `<ProjectItems>` — a Project's members, live.
+// `<ProjectItems>` — a Project's members, live, laid out like the board.
 //
-// **Membership is the ITEM's own `project:` field — the single source of truth.** This
-// component is the query over it, so a project page NEVER hand-lists its items: add
-// `project: <id>` to a new item and it appears here with no page edit. That is the
-// same anti-drift rule that makes the roadmap board a query rather than a list
-// (`projects/index.mdx`, ways_of_working §9).
-export default function ProjectItems({ project, groupBy = 'status', scope = 'live' }: Props) {
+// **Membership is the TICKET's own `project:` field — the single source of truth** (R-DIB-10).
+// This component is the query over it, so a project page NEVER hand-lists its tickets: add
+// `project: <id>` to a new ticket and it appears here with no page edit.
+export default function ProjectItems({ project, groupBy = 'status', scope = 'open' }: Props) {
   const id = useProjectId(project);
   const rows = useRoadmapRows();
+  const index = useTicketIndex();
   const ready = useBundleReady();
 
-  const groups = useMemo(() => {
-    if (!id) return [];
-    let members = rows.filter((r) => r.project === id);
-    if (scope === 'live') members = members.filter((r) => !r.archived);
-    else if (scope === 'archive') members = members.filter((r) => r.archived);
-    return groupRows(members, groupBy);
-  }, [rows, id, groupBy, scope]);
+  const layout = useMemo(
+    () => boardLayout(id ? rows.filter((r) => r.project === id) : [], { groupBy, scope }),
+    [rows, id, groupBy, scope],
+  );
 
-  const total = groups.reduce((n, g) => n + g.rows.length, 0);
+  const total = layout.columns.reduce((n, g) => n + g.rows.length, 0) + (layout.closed?.length ?? 0);
 
   if (!id) return <p className="grove-search__empty">No project named — pass <code>project="…"</code>.</p>;
   if (!ready) return <div className="rm-board" data-loading="1"><div className="sk sk-line" /></div>;
   if (!total) {
     return (
       <p className="grove-search__empty">
-        No items carry <code>project: {id}</code> yet.
+        No tickets carry <code>project: {id}</code> yet.
       </p>
     );
   }
 
+  const byStatus = groupBy === 'status';
   return (
     <div className="rm-board" data-group={groupBy} data-project={id}>
-      {groups.map((g) => (
-        <section className="rm-col" key={g.key} data-status={groupBy === 'status' ? g.key : undefined}>
-          <header className="rm-col__h">
-            <span className="rm-col__t">{groupBy === 'status' ? statusLabel(g.key) : g.key}</span>
-            <span className="rm-col__n">{g.rows.length}</span>
-          </header>
-          <div className="rm-col__body">
-            {g.rows.map((r) => (
-              <ItemCard key={r.path} row={r} showStatus={groupBy !== 'status'} />
-            ))}
-          </div>
-        </section>
+      {layout.columns.map((g) => (
+        <BoardColumn
+          key={g.key}
+          title={byStatus ? statusLabel(g.key) : g.key}
+          status={byStatus ? g.key : undefined}
+          rows={g.rows}
+          showStatus={!byStatus}
+          index={index}
+        />
       ))}
+      {layout.closed?.length ? (
+        <BoardColumn title="Closed" status="closed" rows={layout.closed} showStatus index={index} folded />
+      ) : null}
     </div>
   );
 }

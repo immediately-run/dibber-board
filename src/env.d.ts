@@ -17,3 +17,10 @@
 /// <reference types="@immediately-run/sdk/ambient" />
 
 declare module '*.css' {}
+
+// A fixture's text, for the tests (`?raw` is Vite's, and vitest's): the Dibber store a test
+// renders is read as the files it is, not retyped.
+declare module '*.md?raw' {
+  const text: string;
+  export default text;
+}

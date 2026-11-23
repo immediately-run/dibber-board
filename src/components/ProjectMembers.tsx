@@ -3,7 +3,9 @@ import ProjectMeta from './ProjectMeta';
 import { useProjectId } from './useProjectId';
 
 // `<ProjectMembers>` — the members section a Project page ends with: the status
-// rollup, the live board, and the completed board under its own heading.
+// rollup and the members' board, whose closed tickets fold into one column (they used to
+// be a second, "Completed" board under its own heading;
+// [DIB-13](https://github.com/immediately-run/dibber/blob/main/tickets/DIB-13.md)).
 //
 // Placed by `projects/_layout.mdx`, so a project page's BODY carries only what is true
 // of that project. It used to be pasted at the foot of every page, identically in all
@@ -30,8 +32,6 @@ export default function ProjectMembers() {
       <h2 className="rm-members__h">Members</h2>
       <ProjectMeta />
       <ProjectItems groupBy="status" />
-      <h3 className="rm-members__h" data-level="3">Completed</h3>
-      <ProjectItems groupBy="status" scope="archive" />
     </section>
   );
 }
