@@ -9,7 +9,7 @@
 import { describe, expect, it, vi } from 'vitest';
 import type { ReactNode } from 'react';
 import { renderToStaticMarkup } from 'react-dom/server';
-import { parseFrontmatter } from '@immediately-run/mdx-plugins';
+import { parseFrontmatter } from '@immediately-run/mdx-plugins/frontmatter';
 import ek1 from './__fixtures__/dibber-every-key/tickets/EK-1.md?raw';
 import ek2 from './__fixtures__/dibber-every-key/tickets/EK-2.md?raw';
 import ek3 from './__fixtures__/dibber-every-key/tickets/EK-3.md?raw';
