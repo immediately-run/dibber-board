@@ -151,16 +151,16 @@ describe("a plain Dibber store (dibber's every-key fixture)", () => {
 });
 
 describe('R-DIB-1 picks the same tickets as the roadmap-item tag did', () => {
-  // The frontmatter of every entry in the baton and docs ticket corpora that either rule
-  // could pick, snapshotted by `scripts/snapshot-ticket-corpora.mjs` with the engine's parser.
-  // Fieldhouse and hq were outside the session that wrote this; add them the same way.
+  // The frontmatter of every entry in the baton, docs, fieldhouse and hq ticket corpora that
+  // either rule could pick, snapshotted by `scripts/snapshot-ticket-corpora.mjs` with the
+  // engine's parser.
   for (const [name, corpus] of Object.entries(corpora as Record<string, { commit: string; entries: { path: string; meta: Meta }[] }>)) {
     it(`${name} @ ${corpus.commit.slice(0, 7)}`, () => {
       const byRule = corpus.entries.filter((e) => isItemMeta(e.meta)).map((e) => e.path);
       const byTag = corpus.entries
         .filter((e) => Array.isArray(e.meta.tags) && e.meta.tags.includes('roadmap-item'))
         .map((e) => e.path);
-      expect(byTag.length).toBeGreaterThan(300);
+      expect(byTag.length).toBeGreaterThan(0); // the corpus was read, not an empty folder
       expect(byRule).toEqual(byTag);
     });
   }

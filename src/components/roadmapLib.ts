@@ -99,7 +99,7 @@ export function isEntryPath(path: string): boolean {
  * `kind` other than `ticket`. Every other page with an `id` says what it is with `kind`
  * (`project`, `doc`, …), so no folder convention or tag is needed to tell them apart
  * ([DIB-13](https://github.com/immediately-run/dibber/blob/main/tickets/DIB-13.md)). In the
- * docs and Baton corpora this picks out exactly the files tagged `roadmap-item`, which is what
+ * docs, Baton, Fieldhouse and hq corpora this picks out exactly the files tagged `roadmap-item`, which is what
  * the board used to key on (`roadmapLib.test.ts` pins it).
  */
 export function isItemMeta(meta: Meta | undefined): boolean {
@@ -287,10 +287,10 @@ export function queueOf(row: { tags?: string[] | null; requires?: string[] | nul
  *  once per row set by `readyIndex`. */
 export type ReadyIndex = ReadonlyMap<string, string>;
 
-/** The statuses that satisfy a dependency: `done`, and `superseded`, whose replacement
- *  carries the work on. Baton's own ready gate counts the same two (`isDone` in baton's
- *  `src/defaults/tickets.ts`); the `dibber` command counts `done` alone, and which is right is
- *  part of Dibber's open DIB-20. */
+/** The statuses that satisfy a dependency (R-DIB-8): `done`, and `superseded`, whose
+ *  replacement carries the work on. Baton's own ready gate counts the same two (`isDone` in
+ *  baton's `src/defaults/tickets.ts`), and so does the `dibber` command since
+ *  [DIB-20](https://github.com/immediately-run/dibber/blob/main/tickets/DIB-20.md). */
 const SATISFIES_DEPENDENCY = new Set(['done', 'superseded']);
 
 /** The ready gate's lookup table over a full row set, open and closed. An id that appears
