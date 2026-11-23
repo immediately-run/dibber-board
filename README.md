@@ -56,14 +56,13 @@ writes it:
 - **A ticket** is a `.md` or `.mdx` file whose frontmatter has an `id` and no `kind` other than
   `ticket` (R-DIB-1). A page with an `id` of its own says what it is with `kind`, so the board
   needs no tag or folder convention to tell them apart. (It used to need the `roadmap-item`
-  tag; in the docs and baton stores the new rule picks out exactly the same files, and
+  tag; in the docs, baton, fieldhouse and hq stores the new rule picks out exactly the same files, and
   `src/board.test.tsx` pins that.)
 - **Status** (R-DIB-6): each live status (`available`, `in-progress`, `in-review`,
   `deprioritized`) gets a column, empty or not. A closed ticket (`done`, `withdrawn`,
   `superseded`, `deferred`) goes in one folded column, whichever folder it sits in (R-DIB-2).
-- **Ready** (R-DIB-8): an `available` ticket whose every `depends_on` is done is ready.
-  `superseded` also counts as done here, as it does in Baton; the `dibber` command counts
-  `done` alone, and Dibber's DIB-20 is where that is settled. A dependency on another
+- **Ready** (R-DIB-8): an `available` ticket whose every `depends_on` is `done` or
+  `superseded` is ready, as in the `dibber` command and in Baton. A dependency on another
   repository's ticket (`baton:B-111`) still holds the ticket, and the card says it is in
   another repository rather than missing.
 - **Relations**: a card shows its `assignee` and, for a parent, how many of its children are
