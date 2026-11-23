@@ -24,7 +24,9 @@
 [data-status="done"]          { --rm-status: #4fbf7f; }
 [data-status="deferred"],
 [data-status="deprioritized"],
-[data-status="superseded"]    { --rm-status: var(--ink-3); }
+[data-status="withdrawn"],
+[data-status="superseded"],
+[data-status="closed"]        { --rm-status: var(--ink-3); }
 /* Project lifecycle values share the scale. */
 [data-status="active"]        { --rm-status: var(--accent); }
 [data-status="proposed"]      { --rm-status: #6aa6ff; }
@@ -64,6 +66,11 @@
    as a precondition rather than a property: a repo or tag chip says what the item IS, this
    one says what it is WAITING on. */
 .rm-chip[data-kind="requires"] { border-style: dashed; border-color: color-mix(in oklab, var(--accent-violet) 40%, var(--line)); color: var(--ink-2); }
+/* DIB-13 — who said they are working on it (advisory), what still holds an available ticket
+   (dashed, like `requires`: it says what the ticket is WAITING on), and a parent's progress. */
+.rm-chip[data-kind="assignee"] { color: var(--ink); }
+.rm-chip[data-kind="waits"]    { border-style: dashed; color: var(--ink-3); white-space: normal; }
+.rm-chip[data-kind="children"] { color: var(--ink-2); }
 a.rm-chip:hover               { border-color: var(--line-2); }
 /* Work queues (process-control/03) — `<QueueChips>`. Operator work carries the accent
    (magenta) because it waits on a person; the autonomous line carries violet, the agent's
@@ -76,7 +83,7 @@ a.rm-chip:hover               { border-color: var(--line-2); }
 .rm-chip[data-kind="queue"][data-queue="inFlight"]   { color: var(--ink-2); }
 .rm-unclustered > .rm-card__meta { margin-top: 8px; }
 
-/* — the item header (rendered by EntryHeader for every roadmap-item entry) — */
+/* — the ticket header (`<RoadmapMeta>`, placed by a store's `_layout.mdx`) — */
 .rm-meta {
   display: flex;
   flex-wrap: wrap;
@@ -117,6 +124,14 @@ a.rm-chip:hover               { border-color: var(--line-2); }
   color: var(--rm-status, var(--ink-2));
 }
 .rm-col__n { font: 400 11px/1.4 var(--mono); color: var(--ink-3); }
+/* The folded column (closed tickets): a native <details>, so its header is a <summary>. Shut,
+   it is a header alone; the arrow turns when it opens. */
+summary.rm-col__h { cursor: pointer; list-style: none; }
+summary.rm-col__h::-webkit-details-marker { display: none; }
+summary.rm-col__h::after { content: '→'; color: var(--ink-3); transition: transform .15s; }
+details.rm-col[open] > summary.rm-col__h::after { transform: rotate(90deg); }
+details.rm-col:not([open]) > summary.rm-col__h { padding-bottom: 0; border-bottom: 0; margin-bottom: 0; }
+summary.rm-col__h:focus-visible { outline: 2px solid var(--accent); outline-offset: 4px; border-radius: var(--r-sm); }
 .rm-col__body { display: grid; gap: 8px; }
 .rm-col__empty { color: var(--ink-3); font-size: 13px; margin: 2px; }
 
@@ -185,6 +200,9 @@ a.rm-chip:hover               { border-color: var(--line-2); }
 }
 .rm-dep:hover { border-color: var(--line-2); }
 .rm-dep__id { font: 700 11.5px/1.6 var(--mono); color: var(--ink); }
+/* A dependency with no ticket here to link to (DIB-13): dashed, and says why. */
+span.rm-dep { border-style: dashed; }
+.rm-dep__note { font: 400 11px/1.6 var(--mono); color: var(--ink-3); }
 
 /* — projects — */
 /* `<ProjectMembers>` — the members section `projects/_layout.mdx` puts under every
@@ -199,12 +217,6 @@ a.rm-chip:hover               { border-color: var(--line-2); }
   letter-spacing: -.02em;
   line-height: 1.1;
   color: var(--ink);
-}
-.rm-members__h[data-level="3"] {
-  font-weight: 600;
-  font-size: 1.32em;
-  letter-spacing: -.01em;
-  margin-top: 1.5em;
 }
 
 .rm-projectmeta { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; margin: 12px 0 2px; }

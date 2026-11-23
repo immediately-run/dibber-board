@@ -1,8 +1,9 @@
 import { useMemo } from 'react';
-import { groupRows } from './roadmapLib';
+import { boardLayout } from './roadmapLib';
+import type { BoardScope } from './roadmapLib';
 import { statusLabel } from './roadmapData';
-import { useBundleReady, useRoadmapRows } from './useRoadmapRows';
-import ItemCard from './ItemCard';
+import { useBundleReady, useRoadmapRows, useTicketIndex } from './useRoadmapRows';
+import BoardColumn from './BoardColumn';
 
 interface Props {
   groupBy?: 'status' | 'project' | 'repo' | 'tag';
@@ -10,31 +11,25 @@ interface Props {
   filterTag?: string;
   /** Comma-separated subset/order override for the groups shown. */
   statuses?: string;
-  /** `live` (default) hides archived entries; `archive` shows only them; `all` both. */
-  scope?: 'live' | 'archive' | 'all';
+  /** `open` (default): open tickets, with the closed folded into one column; `closed`: only
+   *  the closed; `all`: every ticket. `live` and `archive` are older names for the first two. */
+  scope?: BoardScope;
 }
 
-// `<RoadmapBoard>` — the whole replacement for a hand-maintained roadmap index: a
-// live, grouped board over every `roadmap-item` entry. Nothing here is listed by
-// hand, so an item added under `roadmap/` appears with no page edit — the anti-drift
-// rule that keeps the board a query, not a list (ways_of_working §9).
-export default function RoadmapBoard({ groupBy = 'status', filterTag, statuses, scope = 'live' }: Props) {
+// `<RoadmapBoard>` — the kanban board: a live, grouped query over every ticket in the store
+// (R-DIB-1), so a ticket added to the folder appears with no page edit. Grouped by status it
+// shows a column per live status and folds the closed tickets into one collapsed column
+// ([DIB-13](https://github.com/immediately-run/dibber/blob/main/tickets/DIB-13.md)); the
+// layout itself is `boardLayout`'s.
+export default function RoadmapBoard({ groupBy = 'status', filterTag, statuses, scope = 'open' }: Props) {
   const rows = useRoadmapRows();
   const ready = useBundleReady();
+  const index = useTicketIndex();
 
-  const groups = useMemo(() => {
-    let scoped = rows;
-    if (scope === 'live') scoped = scoped.filter((r) => !r.archived);
-    else if (scope === 'archive') scoped = scoped.filter((r) => r.archived);
-    if (filterTag) scoped = scoped.filter((r) => r.tags.includes(filterTag));
-    const grouped = groupRows(scoped, groupBy);
-    if (!statuses) return grouped;
-    // An explicit subset also fixes the order — the author's list wins.
-    const wanted = statuses.split(',').map((s) => s.trim()).filter(Boolean);
-    return wanted.map((k) => grouped.find((g) => g.key === k) ?? { key: k, rows: [] });
-  }, [rows, groupBy, filterTag, statuses, scope]);
-
-  const total = groups.reduce((n, g) => n + g.rows.length, 0);
+  const layout = useMemo(
+    () => boardLayout(rows, { groupBy, scope, filterTag, statuses }),
+    [rows, groupBy, filterTag, statuses, scope],
+  );
 
   if (!ready) {
     return (
@@ -49,24 +44,25 @@ export default function RoadmapBoard({ groupBy = 'status', filterTag, statuses, 
     );
   }
 
-  if (!total) return <p className="grove-search__empty">No items match.</p>;
+  const total = layout.columns.reduce((n, g) => n + g.rows.length, 0) + (layout.closed?.length ?? 0);
+  if (!total) return <p className="grove-search__empty">No tickets match.</p>;
 
+  const byStatus = groupBy === 'status';
   return (
     <div className="rm-board" data-group={groupBy}>
-      {groups.map((g) => (
-        <section className="rm-col" key={g.key} data-status={groupBy === 'status' ? g.key : undefined}>
-          <header className="rm-col__h">
-            <span className="rm-col__t">{groupBy === 'status' ? statusLabel(g.key) : g.key}</span>
-            <span className="rm-col__n">{g.rows.length}</span>
-          </header>
-          <div className="rm-col__body">
-            {g.rows.map((r) => (
-              <ItemCard key={r.path} row={r} showStatus={groupBy !== 'status'} />
-            ))}
-            {g.rows.length === 0 ? <p className="rm-col__empty">None</p> : null}
-          </div>
-        </section>
+      {layout.columns.map((g) => (
+        <BoardColumn
+          key={g.key}
+          title={byStatus ? statusLabel(g.key) : g.key}
+          status={byStatus ? g.key : undefined}
+          rows={g.rows}
+          showStatus={!byStatus}
+          index={index}
+        />
       ))}
+      {layout.closed?.length ? (
+        <BoardColumn title="Closed" status="closed" rows={layout.closed} showStatus index={index} folded />
+      ) : null}
     </div>
   );
 }
