@@ -137,13 +137,13 @@ Two things changed in the move and nothing else did:
   path into the viewer's filesystem. It is app code now; the comment says so.
 - `@immediately-run/mdx-plugins` became a direct dependency of this package. `InlineProse`
   imports `parseInlineProse` from it, and it used to arrive through Baton's toolchain
-  rather than through a declared dependency; declared at Grove's own pin (`0.7.1`) so the
+  rather than through a declared dependency; declared at Grove's own pin (`0.8.0`) so the
   parser is the one the engine parses with.
 
 ## Dependencies
 
 ```json
-"@immediately-run/grove": "github:immediately-run/grove#33391ef4ae643105e5b35f9db2959dd3eb55fb84",
+"@immediately-run/grove": "github:immediately-run/grove#03a1fa2c133378542eac90528213d652d594d60c",
 "@immediately-run/sdk": "^0.93.0",
 "react": "^19.2.5",
 "react-dom": "^19.2.5"
@@ -151,10 +151,11 @@ Two things changed in the move and nothing else did:
 
 Grove is pinned **by commit**, never a branch: `LIBRARY_MOUNTS_SPEC §6/§7` makes a
 commit-pinned ref immutable and cache-first, so this app is reproducible and fast. The pin
-is the merge of grove#105 (package version 0.2.11) — the first commit whose cache zip was
-built with `libraryArtifacts: true` (R3-1345): its zip carries `files[].library`, the
-mounted-path variants the sandbox seeds for a git library (R3-1343), so grove's modules
-run from the cached zip instead of cold-transpiling on every boot.
+is the merge of grove#107 (package version 0.2.11), which adds the `logo:` key the
+board's top bar reads. Every commit since grove#105 builds its cache zip with
+`libraryArtifacts: true` (R3-1345): the zip carries `files[].library`, the mounted-path
+variants the sandbox seeds for a git library (R3-1343), so grove's modules run from the
+cached zip instead of cold-transpiling on every boot.
 
 The SDK line is not decoration. Grove declares the SDK and React in both `dependencies` and
 `peerDependencies`; a shell whose range does not satisfy the engine's peer gets **no**
