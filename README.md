@@ -51,7 +51,7 @@ content at all.
 ## What it reads
 
 The board reads the format as Dibber's [`SPEC.md`](https://github.com/immediately-run/dibber/blob/main/SPEC.md)
-writes it:
+writes it. The reader tests run every valid Dibber conformance store from a pinned revision.
 
 - **A ticket** is a `.md` or `.mdx` file whose frontmatter has an `id` and no `kind` other than
   `ticket` (R-DIB-1). A page with an `id` of its own says what it is with `kind`, so the board

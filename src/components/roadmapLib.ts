@@ -110,7 +110,7 @@ export function isItemMeta(meta: Meta | undefined): boolean {
 }
 
 /** A dependency on another repository's ticket: `<repo>:<ID>` (R-DIB-4, R-DIB-8). */
-const QUALIFIED_ID = /^[a-z0-9][a-z0-9._-]*:[A-Z][A-Z0-9]*-[0-9]+[a-z0-9]*$/;
+const QUALIFIED_ID = /^[a-z0-9][a-z0-9._-]*:(?:[A-Za-z][A-Za-z0-9]*-(?:[0-9]+|[a-z0-9]{4,})|[A-Z][A-Z0-9]*-[0-9]+[a-z0-9]*)$/;
 
 /** Is this `depends_on` entry another repository's ticket? */
 export function isQualifiedId(id: string): boolean {
