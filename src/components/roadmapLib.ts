@@ -94,19 +94,16 @@ export function isEntryPath(path: string): boolean {
   return !(path.split('/').pop() || '').startsWith('_');
 }
 
-/**
- * Is this metadata entry a ticket? Dibber's R-DIB-1: its frontmatter carries an `id` and no
- * `kind` other than `ticket`. Every other page with an `id` says what it is with `kind`
- * (`project`, `doc`, …), so no folder convention or tag is needed to tell them apart
- * ([DIB-13](https://github.com/immediately-run/dibber/blob/main/tickets/DIB-13.md)). In the
- * docs, Baton, Fieldhouse and hq corpora this picks out exactly the files tagged `roadmap-item`, which is what
- * the board used to key on (`roadmapLib.test.ts` pins it).
- */
+/** Read the page marker, including the page roles used by older stores (DIB-27). */
+export function pageRole(meta: Meta | undefined): string | undefined {
+  if (!meta) return undefined;
+  return meta.page ?? (['project', 'goal', 'doc', 'view'].includes(meta.kind) ? meta.kind : undefined);
+}
+
+/** Ticket selection for [DIB-27](https://github.com/immediately-run/dibber/blob/main/tickets/DIB-27.md). */
 export function isItemMeta(meta: Meta | undefined): boolean {
-  if (!meta) return false;
-  const id = meta.id;
-  if (id === undefined || id === null || String(id) === '') return false;
-  return meta.kind === undefined || meta.kind === null || meta.kind === '' || meta.kind === 'ticket';
+  if (!meta || pageRole(meta) !== undefined) return false;
+  return meta.id != null && String(meta.id) !== '' && (meta.status != null || list(meta.tags).includes('roadmap-item'));
 }
 
 /** A dependency on another repository's ticket: `<repo>:<ID>` (R-DIB-4, R-DIB-8). */
@@ -121,7 +118,7 @@ export function isQualifiedId(id: string): boolean {
  *  else `''`. The empty string is the gate every project surface reads — a page that
  *  is not a project entity has no members to show, so its chrome renders nothing. */
 export function projectIdOf(meta: Meta | undefined): string {
-  return meta?.kind === 'project' ? String(meta.id ?? '') : '';
+  return pageRole(meta) === 'project' ? String(meta?.id ?? '') : '';
 }
 
 /** The href of the project page a ticket's `project` names: the `kind: project` entry

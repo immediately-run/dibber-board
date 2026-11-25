@@ -1,6 +1,6 @@
 import { useMemo } from 'react';
 import { Link, useBundleEntries } from '@immediately-run/sdk';
-import { isEntryPath, queueRollup, readyIndex, statusRollup, usesQueues } from './roadmapLib';
+import { pageRole, isEntryPath, queueRollup, readyIndex, statusRollup, usesQueues } from './roadmapLib';
 import type { Meta } from './roadmapLib';
 import { statusLabel } from './roadmapData';
 import { useBundleReady, useRoadmapRows, useTicketIndex } from './useRoadmapRows';
@@ -34,7 +34,7 @@ export default function ProjectIndex({ showUnclustered = 'true' }: { showUnclust
       else byProject.set(k, [r]);
     }
     const list = entries
-      .filter((e) => isEntryPath(e.path) && e.meta?.kind === 'project')
+      .filter((e) => isEntryPath(e.path) && pageRole(e.meta) === 'project')
       .map((e) => {
         const id = String(e.meta.id ?? '');
         const members = byProject.get(id) ?? [];
