@@ -25,7 +25,7 @@
     "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "@immediately-run/grove": "github:immediately-run/grove#03a1fa2c133378542eac90528213d652d594d60c",
+    "@immediately-run/grove": "github:immediately-run/grove#e5e32849d946e1729bde8eff83102fa24d822335",
     "@immediately-run/mdx-plugins": "0.8.0",
     "@immediately-run/sdk": "^0.93.0",
     "react": "^19.2.5",
