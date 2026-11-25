@@ -3,7 +3,7 @@
 import { describe, expect, it } from 'vitest';
 import { parseFrontmatter } from '@immediately-run/mdx-plugins/frontmatter';
 import { stores } from './__fixtures__/dibber-conformance.json';
-import { itemRows, ticketIndex, waitsOf } from './components/roadmapLib';
+import { isItemMeta, itemRows, pageRole, ticketIndex, waitsOf } from './components/roadmapLib';
 import type { Meta } from './components/roadmapLib';
 
 describe('Dibber valid conformance stores', () => {
@@ -23,4 +23,11 @@ describe('Dibber valid conformance stores', () => {
       }
     });
   }
+});
+
+it('recognizes migrated pages and work kinds (DIB-27)', () => {
+  const page = { id: 'project-one', page: 'project', status: 'active' };
+  expect(pageRole(page)).toBe('project');
+  expect(isItemMeta(page)).toBe(false);
+  expect(isItemMeta({ id: 'X-1', status: 'available', kind: 'bug' })).toBe(true);
 });

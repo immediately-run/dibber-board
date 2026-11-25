@@ -2,7 +2,7 @@ import { useMemo, useState } from 'react';
 import { Link, useBundleEntries } from '@immediately-run/sdk';
 import { useBundleReady } from './useRoadmapRows';
 import InlineProse from './InlineProse';
-import { isEntryPath } from './roadmapLib';
+import { pageRole, isEntryPath } from './roadmapLib';
 import './roadmap.css';
 import type { Meta } from './roadmapLib';
 
@@ -30,7 +30,7 @@ export default function TopicIndex({ filter = '' }: { filter?: string }) {
 
   const { docs, byTopic } = useMemo(() => {
     const parsed: Doc[] = entries
-      .filter((e) => isEntryPath(e.path) && e.meta?.kind === 'doc')
+      .filter((e) => isEntryPath(e.path) && pageRole(e.meta) === 'doc')
       .map((e) => ({
         path: e.path,
         href: e.href,
